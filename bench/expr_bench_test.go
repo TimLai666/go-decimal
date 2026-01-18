@@ -16,7 +16,7 @@ func BenchmarkCompile(b *testing.B) {
 }
 
 func BenchmarkEval(b *testing.B) {
-	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 	prog, err := expr.Compile("1.2 + x/3 - y*2")
 	if err != nil {
 		b.Fatal(err)

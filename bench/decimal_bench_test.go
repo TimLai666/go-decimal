@@ -7,7 +7,7 @@ import (
 )
 
 func BenchmarkAdd(b *testing.B) {
-	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 	a := decimal.MustParse(ctx, "12345.67")
 	c := decimal.MustParse(ctx, "890.12")
 
@@ -19,7 +19,7 @@ func BenchmarkAdd(b *testing.B) {
 }
 
 func BenchmarkMul(b *testing.B) {
-	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 	a := decimal.MustParse(ctx, "123.45")
 	c := decimal.MustParse(ctx, "6.78")
 

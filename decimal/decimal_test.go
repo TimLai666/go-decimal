@@ -31,13 +31,13 @@ func TestParseExactString(t *testing.T) {
 }
 
 func TestParseContextRounding(t *testing.T) {
-	ctx := Context{Scale: 2, Mode: RoundHalfUp}
+	ctx := Context{Scale: 2, Mode: RoundingModeHalfUp}
 	got := MustParse(ctx, "1.235").String()
 	if got != "1.24" {
 		t.Fatalf("rounded = %q, want 1.24", got)
 	}
 
-	ctx = Context{Scale: 2, Mode: RoundUp}
+	ctx = Context{Scale: 2, Mode: RoundingModeUp}
 	got = MustParse(ctx, "-1.231").String()
 	if got != "-1.24" {
 		t.Fatalf("round up = %q, want -1.24", got)
@@ -45,7 +45,7 @@ func TestParseContextRounding(t *testing.T) {
 }
 
 func TestArith(t *testing.T) {
-	ctx := Context{Scale: 2, Mode: RoundHalfUp}
+	ctx := Context{Scale: 2, Mode: RoundingModeHalfUp}
 
 	a := mustParseExact(t, "1.20")
 	b := mustParseExact(t, "1.234")

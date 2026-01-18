@@ -17,7 +17,7 @@ go get github.com/TimLai666/go-decimal
 ## Decimal usage
 
 ```go
-ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 
 price := decimal.MustParse(ctx, "12.345") // 12.35
 qty := decimal.MustParse(ctx, "2")
@@ -32,16 +32,16 @@ fmt.Println(final.String()) // 23.69
 
 ### Rounding modes
 
-- `RoundDown`: toward zero
-- `RoundUp`: away from zero
-- `RoundHalfUp`: halves away from zero
+- `RoundingModeDown`: toward zero
+- `RoundingModeUp`: away from zero
+- `RoundingModeHalfUp`: halves away from zero
 
 All operations normalize to `Context.Scale`.
 
 ## Expression usage
 
 ```go
-ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 
 prog, err := expr.Compile("1.2 + x/3")
 if err != nil {
@@ -64,7 +64,7 @@ fmt.Println(res.String()) // 4.53
 
 - Fixed-point decimals: `value = int / 10^scale`
 - Division is integer division with rounding to `Context.Scale`
-- No exponent notation or math functions in v1
+- No exponent notation or math functions (sqrt, log, etc.)
 
 ## Benchmarks
 

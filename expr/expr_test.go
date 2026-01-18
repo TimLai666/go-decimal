@@ -7,7 +7,7 @@ import (
 )
 
 func TestCompileEval(t *testing.T) {
-	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 
 	prog, err := Compile("1.2 + x/3")
 	if err != nil {
@@ -28,7 +28,7 @@ func TestCompileEval(t *testing.T) {
 }
 
 func TestUnaryAndParens(t *testing.T) {
-	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 
 	prog, err := Compile("-1 + 2")
 	if err != nil {
@@ -56,7 +56,7 @@ func TestUnaryAndParens(t *testing.T) {
 }
 
 func TestUnknownVar(t *testing.T) {
-	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundHalfUp}
+	ctx := decimal.Context{Scale: 2, Mode: decimal.RoundingModeHalfUp}
 
 	prog, err := Compile("x + 1")
 	if err != nil {

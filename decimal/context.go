@@ -3,9 +3,9 @@ package decimal
 type RoundingMode uint8
 
 const (
-	RoundDown   RoundingMode = iota // toward zero
-	RoundUp                         // away from zero
-	RoundHalfUp                     // halves away from zero
+	RoundingModeDown   RoundingMode = iota // toward zero
+	RoundingModeUp                         // away from zero
+	RoundingModeHalfUp                     // halves away from zero
 )
 
 type Context struct {

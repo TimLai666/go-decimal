@@ -52,13 +52,13 @@ func Div(ctx Context, a, b Decimal) (Decimal, error) {
 	if rem.Sign() != 0 {
 		resultNeg := (numer.Sign() < 0) != (denom.Sign() < 0)
 		switch ctx.Mode {
-		case RoundUp:
+		case RoundingModeUp:
 			if resultNeg {
 				quo.Sub(&quo, bigOne)
 			} else {
 				quo.Add(&quo, bigOne)
 			}
-		case RoundHalfUp:
+		case RoundingModeHalfUp:
 			var absRem big.Int
 			absRem.Abs(&rem)
 			absRem.Mul(&absRem, bigTwo)
@@ -73,7 +73,7 @@ func Div(ctx Context, a, b Decimal) (Decimal, error) {
 					quo.Add(&quo, bigOne)
 				}
 			}
-		case RoundDown:
+		case RoundingModeDown:
 		default:
 		}
 	}
@@ -102,13 +102,13 @@ func normalize(d Decimal, scale int32, mode RoundingMode) Decimal {
 
 	if rem.Sign() != 0 {
 		switch mode {
-		case RoundUp:
+		case RoundingModeUp:
 			if d.i.Sign() < 0 {
 				quo.Sub(&quo, bigOne)
 			} else {
 				quo.Add(&quo, bigOne)
 			}
-		case RoundHalfUp:
+		case RoundingModeHalfUp:
 			var absRem big.Int
 			absRem.Abs(&rem)
 			absRem.Mul(&absRem, bigTwo)
@@ -119,7 +119,7 @@ func normalize(d Decimal, scale int32, mode RoundingMode) Decimal {
 					quo.Add(&quo, bigOne)
 				}
 			}
-		case RoundDown:
+		case RoundingModeDown:
 		default:
 		}
 	}
@@ -145,7 +145,7 @@ func rescaleUp(d Decimal, scale int32) Decimal {
 	}
 
 	if d.scale > scale {
-		return normalize(d, scale, RoundDown)
+		return normalize(d, scale, RoundingModeDown)
 	}
 
 	diff := scale - d.scale
