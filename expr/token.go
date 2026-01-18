@@ -1,6 +1,6 @@
 package expr
 
-import "github.com/tingzhen/go-decimal/decimal"
+import "github.com/TimLai666/go-decimal/decimal"
 
 type tokenType uint8
 

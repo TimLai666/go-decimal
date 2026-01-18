@@ -1,3 +1,3 @@
-module github.com/tingzhen/go-decimal
+module github.com/TimLai666/go-decimal
 
 go 1.22

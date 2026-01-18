@@ -3,7 +3,7 @@ package expr
 import (
 	"fmt"
 
-	"github.com/tingzhen/go-decimal/decimal"
+	"github.com/TimLai666/go-decimal/decimal"
 )
 
 type opInfo struct {

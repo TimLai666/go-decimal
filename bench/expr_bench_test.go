@@ -3,8 +3,8 @@ package bench
 import (
 	"testing"
 
-	"github.com/tingzhen/go-decimal/decimal"
-	"github.com/tingzhen/go-decimal/expr"
+	"github.com/TimLai666/go-decimal/decimal"
+	"github.com/TimLai666/go-decimal/expr"
 )
 
 func BenchmarkCompile(b *testing.B) {

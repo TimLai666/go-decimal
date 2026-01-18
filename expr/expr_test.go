@@ -3,7 +3,7 @@ package expr
 import (
 	"testing"
 
-	"github.com/tingzhen/go-decimal/decimal"
+	"github.com/TimLai666/go-decimal/decimal"
 )
 
 func TestCompileEval(t *testing.T) {

@@ -11,7 +11,7 @@ Fixed-point decimal arithmetic with a configurable Context (scale + rounding) an
 ## Install
 
 ```
-go get github.com/tingzhen/go-decimal
+go get github.com/TimLai666/go-decimal
 ```
 
 ## Decimal usage

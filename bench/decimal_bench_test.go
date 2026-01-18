@@ -3,7 +3,7 @@ package bench
 import (
 	"testing"
 
-	"github.com/tingzhen/go-decimal/decimal"
+	"github.com/TimLai666/go-decimal/decimal"
 )
 
 func BenchmarkAdd(b *testing.B) {
