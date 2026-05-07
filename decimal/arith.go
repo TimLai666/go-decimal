@@ -133,7 +133,7 @@ func shouldStepAway(quo, rem, absDivisor *big.Int, mode RoundingMode, resultNeg 
 		return !resultNeg
 	case RoundingModeFloor:
 		return resultNeg
-	case RoundingModeHalfUp, RoundingModeHalfEven:
+	case RoundingModeHalfUp, RoundingModeHalfDown, RoundingModeHalfEven:
 		var twice big.Int
 		twice.Abs(rem)
 		twice.Mul(&twice, bigTwo)
@@ -144,10 +144,22 @@ func shouldStepAway(quo, rem, absDivisor *big.Int, mode RoundingMode, resultNeg 
 		if cmp < 0 {
 			return false
 		}
-		if mode == RoundingModeHalfUp {
+		switch mode {
+		case RoundingModeHalfUp:
 			return true
+		case RoundingModeHalfDown:
+			return false
+		default: // RoundingModeHalfEven
+			return quo.Bit(0) == 1
 		}
-		return quo.Bit(0) == 1
+	case RoundingMode05Up:
+		var lastDigit big.Int
+		lastDigit.Abs(quo)
+		lastDigit.Mod(&lastDigit, bigTen)
+		d := lastDigit.Int64()
+		return d == 0 || d == 5
+	case RoundingModeUnnecessary:
+		panic(ErrRoundingNecessary)
 	default:
 		return false
 	}

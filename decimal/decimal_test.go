@@ -1,6 +1,9 @@
 package decimal
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func mustParseExact(t *testing.T, s string) Decimal {
 	t.Helper()
@@ -83,6 +86,28 @@ func TestRoundingModes(t *testing.T) {
 		{"0.001", 0, RoundingModeCeiling, "1"},
 		{"-0.001", 0, RoundingModeCeiling, "0"},
 		{"0.001", 0, RoundingModeFloor, "0"},
+
+		// HalfDown: exact half goes toward zero; otherwise behaves like HalfUp.
+		{"1.25", 1, RoundingModeHalfDown, "1.2"},
+		{"1.26", 1, RoundingModeHalfDown, "1.3"},
+		{"1.24", 1, RoundingModeHalfDown, "1.2"},
+		{"-1.25", 1, RoundingModeHalfDown, "-1.2"},
+		{"-1.26", 1, RoundingModeHalfDown, "-1.3"},
+
+		// 05Up: step away from zero only when last kept digit is 0 or 5.
+		// 1.04: quo=1.0, last digit 0 → 1.1.
+		{"1.04", 1, RoundingMode05Up, "1.1"},
+		// 1.14: quo=1.1, last digit 1 → 1.1 (truncate).
+		{"1.14", 1, RoundingMode05Up, "1.1"},
+		// 1.54: quo=1.5, last digit 5 → 1.6.
+		{"1.54", 1, RoundingMode05Up, "1.6"},
+		// 1.94: quo=1.9, last digit 9 → 1.9.
+		{"1.94", 1, RoundingMode05Up, "1.9"},
+		// Negative mirrors absolute value.
+		{"-1.04", 1, RoundingMode05Up, "-1.1"},
+		{"-1.14", 1, RoundingMode05Up, "-1.1"},
+		// Exact: no residue, no step regardless of last digit.
+		{"1.50", 1, RoundingMode05Up, "1.5"},
 	}
 
 	for _, tc := range cases {
@@ -126,6 +151,33 @@ func TestDivRoundingModes(t *testing.T) {
 				tc.num, tc.den, tc.scale, tc.mode, got.String(), tc.want)
 		}
 	}
+}
+
+func TestRoundingModeUnnecessary(t *testing.T) {
+	ctx := Context{Scale: 2, Mode: RoundingModeUnnecessary}
+
+	// Exact at target scale — no rounding needed, no panic.
+	if got := MustParse(ctx, "1.23").String(); got != "1.23" {
+		t.Errorf("exact = %q, want 1.23", got)
+	}
+
+	// Padding (scaling up) — no rounding needed, no panic.
+	if got := MustParse(ctx, "1.2").String(); got != "1.20" {
+		t.Errorf("padded = %q, want 1.20", got)
+	}
+
+	// Inexact — must panic with ErrRoundingNecessary.
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic on inexact rounding under Unnecessary")
+		}
+		err, ok := r.(error)
+		if !ok || !errors.Is(err, ErrRoundingNecessary) {
+			t.Fatalf("panic value = %v, want ErrRoundingNecessary", r)
+		}
+	}()
+	_ = MustParse(ctx, "1.234")
 }
 
 func TestArith(t *testing.T) {

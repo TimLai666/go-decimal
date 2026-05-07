@@ -22,4 +22,17 @@ var (
 	// ErrInvalidPow is returned by Pow when the base is negative and the
 	// exponent is not an integer (the result would be complex-valued).
 	ErrInvalidPow = errors.New("invalid power: negative base with non-integer exponent")
+
+	// ErrRoundingNecessary is the panic value raised when an operation is
+	// configured with RoundingModeUnnecessary but a non-zero residue would
+	// have to be discarded. Recover with:
+	//
+	//	defer func() {
+	//	    if r := recover(); r != nil {
+	//	        if err, ok := r.(error); ok && errors.Is(err, decimal.ErrRoundingNecessary) {
+	//	            // handle
+	//	        }
+	//	    }
+	//	}()
+	ErrRoundingNecessary = errors.New("rounding necessary but mode is Unnecessary")
 )

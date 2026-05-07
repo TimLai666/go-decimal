@@ -35,6 +35,25 @@ const (
 	// remains. Positive values round toward zero; negative values round
 	// away from zero. 1.231 → 1.23, -1.231 → -1.24 at Scale = 2.
 	RoundingModeFloor
+
+	// RoundingModeHalfDown is "round half toward zero": behaves like HalfUp
+	// except that exact halves stay put rather than stepping away. 1.235 →
+	// 1.23, 1.236 → 1.24, -1.235 → -1.23. Matches Java BigDecimal.ROUND_HALF_DOWN
+	// and Python decimal.ROUND_HALF_DOWN.
+	RoundingModeHalfDown
+
+	// RoundingMode05Up implements Python's decimal.ROUND_05UP rule: after
+	// truncating toward zero, if the kept last digit is 0 or 5 then any
+	// non-zero residue causes a step away from zero; otherwise the residue
+	// is dropped. Used in some accounting contexts to avoid producing 5s
+	// as final digits unless they are exact.
+	RoundingMode05Up
+
+	// RoundingModeUnnecessary asserts that no rounding will be required.
+	// If an operation under this mode has to discard a non-zero residue,
+	// it panics with ErrRoundingNecessary. Equivalent to Java's
+	// RoundingMode.UNNECESSARY (which throws ArithmeticException).
+	RoundingModeUnnecessary
 )
 
 // Context bundles the target precision and rounding policy used by every

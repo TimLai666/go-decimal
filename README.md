@@ -34,19 +34,27 @@ fmt.Println(final.String()) // 23.69
 
 ### Rounding modes
 
-| Mode                   | Direction                          | `1.25` → 1dp | `-1.25` → 1dp |
-| ---------------------- | ---------------------------------- | ------------ | ------------- |
-| `RoundingModeDown`     | toward zero                        | `1.2`        | `-1.2`        |
-| `RoundingModeUp`       | away from zero                     | `1.3`        | `-1.3`        |
-| `RoundingModeHalfUp`   | halves away from zero              | `1.3`        | `-1.3`        |
-| `RoundingModeHalfEven` | halves to even (banker's rounding) | `1.2`        | `-1.2`        |
-| `RoundingModeCeiling`  | toward +∞                          | `1.3`        | `-1.2`        |
-| `RoundingModeFloor`    | toward −∞                          | `1.2`        | `-1.3`        |
+| Mode                      | Direction                                     | `1.25` → 1dp | `-1.25` → 1dp |
+| ------------------------- | --------------------------------------------- | ------------ | ------------- |
+| `RoundingModeDown`        | toward zero                                   | `1.2`        | `-1.2`        |
+| `RoundingModeUp`          | away from zero                                | `1.3`        | `-1.3`        |
+| `RoundingModeCeiling`     | toward +∞                                     | `1.3`        | `-1.2`        |
+| `RoundingModeFloor`       | toward −∞                                     | `1.2`        | `-1.3`        |
+| `RoundingModeHalfUp`      | halves away from zero                         | `1.3`        | `-1.3`        |
+| `RoundingModeHalfDown`    | halves toward zero                            | `1.2`        | `-1.2`        |
+| `RoundingModeHalfEven`    | halves to even (banker's rounding)            | `1.2`        | `-1.2`        |
+| `RoundingMode05Up`        | step iff last kept digit is 0 or 5            | `1.2`        | `-1.2`        |
+| `RoundingModeUnnecessary` | assert no rounding; panic if any is required  | panic        | panic         |
 
-`HalfUp` matches Java `BigDecimal.ROUND_HALF_UP` and Python `decimal.ROUND_HALF_UP`.
-`HalfEven` is the IEEE 754 default and Python `decimal`'s default — prefer it
-for long sums to avoid the upward bias that `HalfUp` accumulates. All
-operations normalize to `Context.Scale`.
+Compatibility:
+
+- `HalfUp` / `HalfDown` / `HalfEven` match Java `BigDecimal.ROUND_HALF_*` and Python `decimal.ROUND_HALF_*`.
+- `Ceiling` / `Floor` / `Down` correspond to IEEE 754 `roundToward{Positive,Negative,Zero}`.
+- `HalfEven` is the IEEE 754 default and Python `decimal`'s default — prefer it for long sums to avoid the upward bias that `HalfUp` accumulates.
+- `05Up` matches Python's `decimal.ROUND_05UP`, an accounting-oriented rule that avoids producing 5-ending digits unless they are exact.
+- `Unnecessary` mirrors Java's `RoundingMode.UNNECESSARY`. When rounding would actually be required, the operation panics with `ErrRoundingNecessary`; recover with `errors.Is(r.(error), decimal.ErrRoundingNecessary)`.
+
+All non-panicking operations normalize to `Context.Scale`.
 
 ## Math functions
 
