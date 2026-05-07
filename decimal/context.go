@@ -16,7 +16,25 @@ const (
 
 	// RoundingModeHalfUp is the everyday "round half away from zero" rule.
 	// Exact halves move away from zero: 1.235 → 1.24, -1.235 → -1.24.
+	// Matches Java BigDecimal.ROUND_HALF_UP and Python decimal.ROUND_HALF_UP.
 	RoundingModeHalfUp
+
+	// RoundingModeHalfEven is banker's rounding: the IEEE 754 default and
+	// Python decimal's default. Behaves like HalfUp except that exact halves
+	// pick the neighbour whose last digit is even, eliminating the systematic
+	// upward bias of HalfUp on long sums. 1.225 → 1.22, 1.235 → 1.24,
+	// -1.225 → -1.22.
+	RoundingModeHalfEven
+
+	// RoundingModeCeiling rounds toward +∞ whenever any non-zero residue
+	// remains. Positive values round away from zero; negative values round
+	// toward zero. 1.231 → 1.24, -1.231 → -1.23 at Scale = 2.
+	RoundingModeCeiling
+
+	// RoundingModeFloor rounds toward -∞ whenever any non-zero residue
+	// remains. Positive values round toward zero; negative values round
+	// away from zero. 1.231 → 1.23, -1.231 → -1.24 at Scale = 2.
+	RoundingModeFloor
 )
 
 // Context bundles the target precision and rounding policy used by every

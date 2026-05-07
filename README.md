@@ -34,11 +34,19 @@ fmt.Println(final.String()) // 23.69
 
 ### Rounding modes
 
-- `RoundingModeDown`: toward zero
-- `RoundingModeUp`: away from zero
-- `RoundingModeHalfUp`: halves away from zero
+| Mode                   | Direction                          | `1.25` → 1dp | `-1.25` → 1dp |
+| ---------------------- | ---------------------------------- | ------------ | ------------- |
+| `RoundingModeDown`     | toward zero                        | `1.2`        | `-1.2`        |
+| `RoundingModeUp`       | away from zero                     | `1.3`        | `-1.3`        |
+| `RoundingModeHalfUp`   | halves away from zero              | `1.3`        | `-1.3`        |
+| `RoundingModeHalfEven` | halves to even (banker's rounding) | `1.2`        | `-1.2`        |
+| `RoundingModeCeiling`  | toward +∞                          | `1.3`        | `-1.2`        |
+| `RoundingModeFloor`    | toward −∞                          | `1.2`        | `-1.3`        |
 
-All operations normalize to `Context.Scale`.
+`HalfUp` matches Java `BigDecimal.ROUND_HALF_UP` and Python `decimal.ROUND_HALF_UP`.
+`HalfEven` is the IEEE 754 default and Python `decimal`'s default — prefer it
+for long sums to avoid the upward bias that `HalfUp` accumulates. All
+operations normalize to `Context.Scale`.
 
 ## Math functions
 

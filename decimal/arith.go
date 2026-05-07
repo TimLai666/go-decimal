@@ -69,31 +69,15 @@ func Div(ctx Context, a, b Decimal) (Decimal, error) {
 	quo.QuoRem(&numer, &denom, &rem)
 
 	if rem.Sign() != 0 {
+		var absDenom big.Int
+		absDenom.Abs(&denom)
 		resultNeg := (numer.Sign() < 0) != (denom.Sign() < 0)
-		switch ctx.Mode {
-		case RoundingModeUp:
+		if shouldStepAway(&quo, &rem, &absDenom, ctx.Mode, resultNeg) {
 			if resultNeg {
 				quo.Sub(&quo, bigOne)
 			} else {
 				quo.Add(&quo, bigOne)
 			}
-		case RoundingModeHalfUp:
-			var absRem big.Int
-			absRem.Abs(&rem)
-			absRem.Mul(&absRem, bigTwo)
-
-			var absDenom big.Int
-			absDenom.Abs(&denom)
-
-			if absRem.Cmp(&absDenom) >= 0 {
-				if resultNeg {
-					quo.Sub(&quo, bigOne)
-				} else {
-					quo.Add(&quo, bigOne)
-				}
-			}
-		case RoundingModeDown:
-		default:
 		}
 	}
 
@@ -120,30 +104,53 @@ func normalize(d Decimal, scale int32, mode RoundingMode) Decimal {
 	quo.QuoRem(&d.i, divisor, &rem)
 
 	if rem.Sign() != 0 {
-		switch mode {
-		case RoundingModeUp:
-			if d.i.Sign() < 0 {
+		resultNeg := d.i.Sign() < 0
+		if shouldStepAway(&quo, &rem, divisor, mode, resultNeg) {
+			if resultNeg {
 				quo.Sub(&quo, bigOne)
 			} else {
 				quo.Add(&quo, bigOne)
 			}
-		case RoundingModeHalfUp:
-			var absRem big.Int
-			absRem.Abs(&rem)
-			absRem.Mul(&absRem, bigTwo)
-			if absRem.Cmp(divisor) >= 0 {
-				if d.i.Sign() < 0 {
-					quo.Sub(&quo, bigOne)
-				} else {
-					quo.Add(&quo, bigOne)
-				}
-			}
-		case RoundingModeDown:
-		default:
 		}
 	}
 
 	return Decimal{i: quo, scale: scale}
+}
+
+// shouldStepAway decides whether a quotient that has been truncated toward
+// zero should be moved one step further away from zero to satisfy mode.
+// rem is the (non-zero) remainder of the truncating division and absDivisor
+// is the positive divisor used to detect the halfway point. resultNeg gives
+// the sign of the true (un-truncated) value, since quo can be 0 even when
+// the true value is negative.
+func shouldStepAway(quo, rem, absDivisor *big.Int, mode RoundingMode, resultNeg bool) bool {
+	switch mode {
+	case RoundingModeDown:
+		return false
+	case RoundingModeUp:
+		return true
+	case RoundingModeCeiling:
+		return !resultNeg
+	case RoundingModeFloor:
+		return resultNeg
+	case RoundingModeHalfUp, RoundingModeHalfEven:
+		var twice big.Int
+		twice.Abs(rem)
+		twice.Mul(&twice, bigTwo)
+		cmp := twice.Cmp(absDivisor)
+		if cmp > 0 {
+			return true
+		}
+		if cmp < 0 {
+			return false
+		}
+		if mode == RoundingModeHalfUp {
+			return true
+		}
+		return quo.Bit(0) == 1
+	default:
+		return false
+	}
 }
 
 func alignScales(a, b Decimal) (Decimal, Decimal, int32) {
