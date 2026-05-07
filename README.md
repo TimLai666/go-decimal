@@ -34,15 +34,17 @@ fmt.Println(final.String()) // 23.69
 
 ### Rounding modes
 
+Listed in roughly decreasing order of typical use. `RoundingModeHalfUp` is the zero value, so `Context{}` rounds half away from zero by default.
+
 | Mode                      | Direction                                     | `1.25` → 1dp | `-1.25` → 1dp |
 | ------------------------- | --------------------------------------------- | ------------ | ------------- |
+| `RoundingModeHalfUp`      | halves away from zero (default)               | `1.3`        | `-1.3`        |
+| `RoundingModeHalfEven`    | halves to even (banker's rounding)            | `1.2`        | `-1.2`        |
 | `RoundingModeDown`        | toward zero                                   | `1.2`        | `-1.2`        |
 | `RoundingModeUp`          | away from zero                                | `1.3`        | `-1.3`        |
 | `RoundingModeCeiling`     | toward +∞                                     | `1.3`        | `-1.2`        |
 | `RoundingModeFloor`       | toward −∞                                     | `1.2`        | `-1.3`        |
-| `RoundingModeHalfUp`      | halves away from zero                         | `1.3`        | `-1.3`        |
 | `RoundingModeHalfDown`    | halves toward zero                            | `1.2`        | `-1.2`        |
-| `RoundingModeHalfEven`    | halves to even (banker's rounding)            | `1.2`        | `-1.2`        |
 | `RoundingMode05Up`        | step iff last kept digit is 0 or 5            | `1.2`        | `-1.2`        |
 | `RoundingModeUnnecessary` | assert no rounding; panic if any is required  | panic        | panic         |
 

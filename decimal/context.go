@@ -5,19 +5,15 @@ package decimal
 // Div, Sqrt, Exp, Log, Pow).
 type RoundingMode uint8
 
+// Constants are ordered by expected usage frequency, so the zero value of
+// Context.Mode is RoundingModeHalfUp — the rule most users mean when they
+// say "round to N decimal places".
 const (
-	// RoundingModeDown truncates toward zero (the absolute value never grows).
-	// 1.235 and -1.235 both become 1.23 / -1.23 at Scale = 2.
-	RoundingModeDown RoundingMode = iota
-
-	// RoundingModeUp rounds away from zero whenever any non-zero residue
-	// remains. 1.231 and -1.231 both become 1.24 / -1.24 at Scale = 2.
-	RoundingModeUp
-
 	// RoundingModeHalfUp is the everyday "round half away from zero" rule.
 	// Exact halves move away from zero: 1.235 → 1.24, -1.235 → -1.24.
 	// Matches Java BigDecimal.ROUND_HALF_UP and Python decimal.ROUND_HALF_UP.
-	RoundingModeHalfUp
+	// This is the zero value of RoundingMode.
+	RoundingModeHalfUp RoundingMode = iota
 
 	// RoundingModeHalfEven is banker's rounding: the IEEE 754 default and
 	// Python decimal's default. Behaves like HalfUp except that exact halves
@@ -25,6 +21,14 @@ const (
 	// upward bias of HalfUp on long sums. 1.225 → 1.22, 1.235 → 1.24,
 	// -1.225 → -1.22.
 	RoundingModeHalfEven
+
+	// RoundingModeDown truncates toward zero (the absolute value never grows).
+	// 1.235 and -1.235 both become 1.23 / -1.23 at Scale = 2.
+	RoundingModeDown
+
+	// RoundingModeUp rounds away from zero whenever any non-zero residue
+	// remains. 1.231 and -1.231 both become 1.24 / -1.24 at Scale = 2.
+	RoundingModeUp
 
 	// RoundingModeCeiling rounds toward +∞ whenever any non-zero residue
 	// remains. Positive values round away from zero; negative values round
@@ -63,12 +67,16 @@ const (
 // the smallest representable unit). Mode chooses how excess digits are
 // dropped when an operation would otherwise produce more.
 //
+// The zero value Context{} is integer-precision (Scale = 0) HalfUp rounding,
+// i.e. ordinary "round half away from zero" to whole numbers.
+//
 // Context is plain data: copy it freely, share it across goroutines, and
 // reuse it in concurrent calls.
 type Context struct {
 	// Scale is the number of fractional digits in normalized results.
 	Scale int32
-	// Mode selects the rounding strategy; see RoundingMode.
+	// Mode selects the rounding strategy; see RoundingMode. The zero value
+	// is RoundingModeHalfUp.
 	Mode RoundingMode
 }
 
