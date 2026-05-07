@@ -15,6 +15,7 @@ const (
 	opSub
 	opMul
 	opDiv
+	opPow
 	opNeg
 )
 
@@ -23,12 +24,37 @@ type op struct {
 	arg  int
 }
 
+// Program is a compiled expression ready to be evaluated.
+//
+// Internally it holds an RPN bytecode plus its constant pool and the
+// list of variable names referenced by the source. A Program is safe to
+// reuse and to share across goroutines as long as no one mutates it
+// (which the public API does not allow). Compile to obtain one.
 type Program struct {
 	ops    []op
 	consts []decimal.Decimal
 	vars   []string
 }
 
+// Eval runs the program against ctx and the provided Vars binding,
+// returning the resulting decimal value.
+//
+// All arithmetic is performed through the decimal package, so every
+// intermediate result is normalized to ctx.Scale and ctx.Mode just as
+// if the caller had used Add / Sub / Mul / Div / Pow directly.
+//
+// Possible errors:
+//   - ErrInvalidExpr   if the program is nil or its bytecode is malformed.
+//     A well-formed Compile output should never trigger this at Eval time.
+//   - ErrUnknownVar    if vars cannot resolve a referenced name. The
+//     wrapped error includes the offending name.
+//   - decimal.ErrDivisionByZero  on division by zero.
+//   - decimal.ErrInvalidPow      from "^" with a negative base and a
+//     non-integer exponent.
+//   - decimal.ErrNonPositiveLog  surfaced through "^" when computing
+//     ln(base) for non-positive base under a fractional exponent.
+//
+// A nil Vars is acceptable as long as the program references no variables.
 func (p *Program) Eval(ctx decimal.Context, vars Vars) (decimal.Decimal, error) {
 	if p == nil {
 		return decimal.Decimal{}, ErrInvalidExpr
@@ -62,7 +88,7 @@ func (p *Program) Eval(ctx decimal.Context, vars Vars) (decimal.Decimal, error) 
 			}
 			v := stack[len(stack)-1]
 			stack[len(stack)-1] = decimal.Neg(v)
-		case opAdd, opSub, opMul, opDiv:
+		case opAdd, opSub, opMul, opDiv, opPow:
 			if len(stack) < 2 {
 				return decimal.Decimal{}, ErrInvalidExpr
 			}
@@ -80,6 +106,11 @@ func (p *Program) Eval(ctx decimal.Context, vars Vars) (decimal.Decimal, error) 
 				res = decimal.Mul(ctx, a, b)
 			case opDiv:
 				res, err = decimal.Div(ctx, a, b)
+				if err != nil {
+					return decimal.Decimal{}, err
+				}
+			case opPow:
+				res, err = decimal.Pow(ctx, a, b)
 				if err != nil {
 					return decimal.Decimal{}, err
 				}

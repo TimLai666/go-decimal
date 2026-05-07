@@ -17,6 +17,15 @@ type opStackItem struct {
 	isParen bool
 }
 
+// Compile parses input and produces a Program ready for repeated Eval.
+//
+// The grammar is the one documented on the package: numeric literals,
+// identifier variables, parentheses, unary +/-, and the binary
+// operators +, -, *, /, ^. Whitespace is ignored. ^ is right-associative
+// and binds tighter than * and /.
+//
+// On success the returned *Program is independent from the input string
+// and safe to reuse. On failure Compile returns nil and ErrInvalidExpr.
 func Compile(input string) (*Program, error) {
 	tokens, err := tokenize(input)
 	if err != nil {
@@ -154,6 +163,8 @@ func binaryOpInfo(op byte) (opInfo, bool) {
 		return opInfo{code: opMul, precedence: 2}, true
 	case '/':
 		return opInfo{code: opDiv, precedence: 2}, true
+	case '^':
+		return opInfo{code: opPow, precedence: 4, rightAssoc: true}, true
 	default:
 		return opInfo{}, false
 	}
@@ -169,6 +180,9 @@ func (p *Program) addVar(name string) int {
 	return len(p.vars) - 1
 }
 
+// String returns a short diagnostic summary of the compiled program —
+// the number of bytecode ops, constants, and referenced variable names.
+// It is meant for logging and debugging, not for serialization.
 func (p *Program) String() string {
 	return fmt.Sprintf("Program{ops:%d,consts:%d,vars:%d}", len(p.ops), len(p.consts), len(p.vars))
 }

@@ -7,6 +7,12 @@ var (
 	bigTwo = big.NewInt(2)
 )
 
+// Add returns a + b normalized to ctx.
+//
+// The two operands are aligned to the larger of their scales before being
+// summed, so addition itself is exact; the only place rounding can sneak
+// in is the final clamp to ctx.Scale (using ctx.Mode) when the aligned
+// scale exceeds it.
 func Add(ctx Context, a, b Decimal) Decimal {
 	a2, b2, scale := alignScales(a, b)
 	var sum big.Int
@@ -14,6 +20,8 @@ func Add(ctx Context, a, b Decimal) Decimal {
 	return normalize(Decimal{i: sum, scale: scale}, ctx.Scale, ctx.Mode)
 }
 
+// Sub returns a - b normalized to ctx. Same semantics as Add but in the
+// other direction.
 func Sub(ctx Context, a, b Decimal) Decimal {
 	a2, b2, scale := alignScales(a, b)
 	var diff big.Int
@@ -21,6 +29,11 @@ func Sub(ctx Context, a, b Decimal) Decimal {
 	return normalize(Decimal{i: diff, scale: scale}, ctx.Scale, ctx.Mode)
 }
 
+// Mul returns a * b normalized to ctx.
+//
+// The intermediate result is held at a.scale + b.scale and is exact;
+// rounding (per ctx.Mode) only happens when collapsing the product down
+// to ctx.Scale.
 func Mul(ctx Context, a, b Decimal) Decimal {
 	var prod big.Int
 	prod.Mul(&a.i, &b.i)
@@ -28,6 +41,12 @@ func Mul(ctx Context, a, b Decimal) Decimal {
 	return normalize(Decimal{i: prod, scale: scale}, ctx.Scale, ctx.Mode)
 }
 
+// Div returns a / b at ctx.Scale digits of precision, rounded with ctx.Mode.
+//
+// Division by zero yields ErrDivisionByZero. Because division is an
+// inherently approximate finite-precision operation, the result has a
+// last-digit error of at most 0.5 ULP under HalfUp and at most 1 ULP
+// under Up or Down.
 func Div(ctx Context, a, b Decimal) (Decimal, error) {
 	if b.i.Sign() == 0 {
 		return Decimal{}, ErrDivisionByZero

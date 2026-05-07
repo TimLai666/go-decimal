@@ -70,7 +70,7 @@ func tokenize(input string) ([]token, error) {
 				i++
 			}
 			tokens = append(tokens, token{typ: tokenIdent, text: input[start:i]})
-		case ch == '+' || ch == '-' || ch == '*' || ch == '/':
+		case ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^':
 			tokens = append(tokens, token{typ: tokenOperator, op: ch})
 			i++
 		case ch == '(':
