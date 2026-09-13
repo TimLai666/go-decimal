@@ -12,19 +12,35 @@ Fixed-point decimal arithmetic with a configurable Context (scale + rounding) an
 
 ## Comparison with other Go decimal libraries
 
-`go-decimal` uses fixed-point arithmetic: `Context.Scale` sets the number of
-fractional digits in normalized results. Libraries described as decimal
-floating-point usually control significant precision and exponent instead.
-This table compares the designs, not benchmark results. Performance depends on
-operand size, scale, and workload.
+Choose `go-decimal` when the number of decimal places is part of the rule you are
+implementing. For example, an invoice total may always use two fractional digits
+and a rate may always use six. Set that rule once in a `Context`, then use the
+same scale and rounding mode for parsing, arithmetic, division, and math
+functions.
 
-| Package | Number model | Precision and rounding | Integrations and other features | Choose it when |
-| --- | --- | --- | --- | --- |
-| **[go-decimal](https://github.com/TimLai666/go-decimal)** | Fixed-point backed by `big.Int` | Pass a `Context` to arithmetic; nine rounding modes; results normalize to `Context.Scale` | `Sqrt`, `Exp`, `Log`, `Pow`, plus a compile-once expression engine; no built-in SQL, JSON, or XML adapters | You want an explicit output scale, explicit rounding, and expression evaluation in one small package |
-| **[shopspring/decimal](https://github.com/shopspring/decimal)** | Arbitrary-precision fixed-point | Method-style arithmetic; division uses a specified precision | `database/sql`, JSON, and XML serialization | You need fixed-point values with those serialization interfaces |
-| **[cockroachdb/apd/v3](https://github.com/cockroachdb/apd)** | Arbitrary-precision decimal based on much of the General Decimal Arithmetic specification | A `Context` controls precision and range; operations return errors and condition flags, with traps for selected conditions | Standard functions such as `sqrt`, `ln`, and `pow` | You need precision and range controls, exactness signals, or General Decimal Arithmetic behavior |
-| **[ericlagergren/decimal](https://github.com/ericlagergren/decimal)** | Arbitrary-precision decimal floating-point | General Decimal Arithmetic and Go operating modes | `math/big`-style API and a separate math package with elementary and trigonometric functions | You need decimal floating-point semantics or a broader math library |
-| **[govalues/decimal](https://github.com/govalues/decimal)** | Decimal floating-point with 19 digits of precision | Correct rounding with half-to-even; methods return errors instead of panicking | BSON, JSON, XML, and SQL interfaces; the project also documents immutable values and no heap allocations during arithmetic | You need bounded precision for transactional finance and low-allocation arithmetic |
+This gives `go-decimal` three practical advantages:
+
+- **Predictable output:** context-aware operations normalize results to the same
+  `Context.Scale`, so a calculation does not silently change its displayed
+  number of fractional digits.
+- **Explicit rounding:** choose from nine rounding modes, then apply the same
+  rule to every context-aware operation in the calculation.
+- **Reusable formulas:** `expr.Compile` parses a formula once. Reuse the
+  resulting program with new variables without reparsing the expression.
+
+Libraries described as decimal floating-point usually control significant
+precision and exponent instead of a fixed number of fractional digits. This
+table focuses on where each design fits and where `go-decimal` is the better
+choice. It is not a benchmark. Performance depends on operand size, scale, and
+workload.
+
+| Package | Main strength | Why `go-decimal` may be the better fit |
+| --- | --- | --- |
+| **[go-decimal](https://github.com/TimLai666/go-decimal)** | Fixed-point values backed by `big.Int`, a shared `Context` for scale and rounding, decimal math, and a compile-once expression engine | Choose this package when fixed fractional digits, explicit rounding, arithmetic functions that do not modify their inputs, and reusable formulas matter more than built-in database or serialization adapters |
+| **[shopspring/decimal](https://github.com/shopspring/decimal)** | Arbitrary-precision fixed-point values with `database/sql`, JSON, and XML serialization | Choose `go-decimal` when one `Context` should define the scale and rounding used across a calculation, and when `Sqrt`, `Exp`, `Log`, `Pow`, or expression evaluation belong in the same package |
+| **[cockroachdb/apd/v3](https://github.com/cockroachdb/apd)** | Arbitrary-precision decimal arithmetic based on much of the General Decimal Arithmetic specification, with precision, range, condition flags, and traps | Choose `go-decimal` when a fixed number of fractional digits and a smaller API are easier to reason about than precision and condition management |
+| **[ericlagergren/decimal](https://github.com/ericlagergren/decimal)** | Arbitrary-precision decimal floating-point with General Decimal Arithmetic and Go modes, plus a broad math package | Choose `go-decimal` when your application needs fixed-point output and a formula evaluator instead of floating-point semantics and a separate math package |
+| **[govalues/decimal](https://github.com/govalues/decimal)** | Decimal floating-point with 19 digits of precision, half-to-even rounding, SQL and serialization interfaces, and a no-heap-allocation design | Choose `go-decimal` when the scale and rounding mode must be configurable instead of fixed to 19-digit half-to-even arithmetic |
 
 For API details and current support status, check each project's documentation
 before choosing a dependency.
